@@ -31,11 +31,11 @@ public class MarkdownUtils {
     private static final String SPOILER_TOKEN = "|";
 
     public static Text parseMarkdownMessage(String message) {
-        System.out.println(message);
+        //System.out.println(message);
         //String sanitizedMessage = message.replaceAll("([()])", "\\\\$1");
         String sanitizedMessage = message.replaceAll("(?<!\\\\)([{}])", "\\\\$1");;
 
-        System.out.println(sanitizedMessage);
+        //System.out.println(sanitizedMessage);
         List<String> escapedChars = new ArrayList<>();
         int escapedCharCount = 0;
         while (ESCAPE_PATTERN.matcher(sanitizedMessage).find()) {
@@ -44,7 +44,7 @@ public class MarkdownUtils {
                 escapedChars.add(escapeMatcher.group(1));
                 escapedCharCount++;
                 sanitizedMessage = escapeMatcher.replaceFirst("{" + escapedCharCount + "}");
-                System.out.println(sanitizedMessage);
+                //System.out.println(sanitizedMessage);
             }
         }
         sanitizedMessage = sanitizedMessage.replaceAll("([()])", "\\\\$1");
@@ -58,12 +58,12 @@ public class MarkdownUtils {
         tokenizedMessage = processPattern(tokenizedMessage, UNDERLINE_PATTERN, String.format("(%s:$1)", UNDERLINE_TOKEN));
         tokenizedMessage = processPattern(tokenizedMessage, STRIKETHROUGH_PATTERN, String.format("(%s:$1)", STRIKETHROUGH_TOKEN));
         tokenizedMessage = processPattern(tokenizedMessage, SPOILER_PATTERN, String.format("(%s:$1)", SPOILER_TOKEN));
-        System.out.println(tokenizedMessage);
+        //System.out.println(tokenizedMessage);
         Text text = parseTokenizedMarkdownText(tokenizedMessage, LiteralText.EMPTY.shallowCopy(), escapedChars).text();
         if (text.getSiblings().size() == 1) {
             text = text.getSiblings().get(0);
         }
-        System.out.println(text.toString());
+        //System.out.println(text.toString());
         return text;
     }
 
@@ -101,7 +101,7 @@ public class MarkdownUtils {
         for (int i = 0; i < tokenizedCharacters.length; i++) {
             char character = tokenizedCharacters[i];
             readCharacters++;
-            System.out.println(String.format("%s | %s | %s | %s | %s", character, stage, tokenizedMessage, escapeNextChar, i));
+            //System.out.println(String.format("%s | %s | %s | %s | %s", character, stage, tokenizedMessage, escapeNextChar, i));
             
             switch (stage) {
                 case INIT -> {
