@@ -124,64 +124,62 @@ public class MarkdownUtils {
                     && character != '}'
                     ) {
                         message += character;
+                    } else if (escapeNextChar) {
+                        message += character;
+                        escapeNextChar = false;
+                    } else if (character == '\\') {
+                        escapeNextChar = true;
                     } else {
-                        if (escapeNextChar) {
-                            message += character;
-                            escapeNextChar = false;
-                        } else if (character == '\\') {
-                            escapeNextChar = true;
-                        } else {
-                            if (character == '(') {
-                                if (!message.isEmpty()) {
-                                    texts.add(new LiteralText(message));
-                                }
-                                message = "";
-                                ParseResult result = parseTokenizedMarkdownText(tokenizedMessage.substring(readCharacters), LiteralText.EMPTY.shallowCopy(), escapedChars);
-                                texts.add(result.text);
-                                i += result.readChars;
-                                readCharacters += result.readChars;
-                                continue charReader;
-                            }
-
-                            if (character == '{') {
-                                stage = ParseStage.PARSE_ESCAPED_CHARACTER;
-                                continue charReader;
-                            }
-
+                        if (character == '(') {
                             if (!message.isEmpty()) {
                                 texts.add(new LiteralText(message));
                             }
-
-                            MutableText textToModify;
-                            if (texts.size() == 1) {
-                                textToModify = texts.get(0).shallowCopy();
-                            } else {
-                                textToModify = new LiteralText("");
-                                textToModify.getSiblings().addAll(texts);
-                            }
-
-                            switch (statementText) {
-                                case ITALIC_TOKEN -> textToModify.setStyle(textToModify.getStyle().withItalic(true));
-                                case BOLD_TOKEN -> textToModify.setStyle(textToModify.getStyle().withBold(true));
-                                case UNDERLINE_TOKEN -> textToModify.setStyle(textToModify.getStyle().withUnderline(true));
-                                case STRIKETHROUGH_TOKEN -> textToModify.setStyle(textToModify.getStyle().withStrikethrough(true));
-                                case SPOILER_TOKEN -> {
-                                    // TODO - █████ ████
-                                    MutableText spoilerText = new LiteralText("[Spoiler]");
-                                    spoilerText.setStyle(
-                                        spoilerText.getStyle()
-                                            .withColor(0xE5E5E8)
-                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, textToModify))
-                                    );
-                                    textToModify = spoilerText;
-                                }
-                                default -> {}
-                            }
-
-                            text = textToModify;
                             message = "";
-                            if (character == ')') break charReader;
+                            ParseResult result = parseTokenizedMarkdownText(tokenizedMessage.substring(readCharacters), LiteralText.EMPTY.shallowCopy(), escapedChars);
+                            texts.add(result.text);
+                            i += result.readChars;
+                            readCharacters += result.readChars;
+                            continue charReader;
                         }
+
+                        if (character == '{') {
+                            stage = ParseStage.PARSE_ESCAPED_CHARACTER;
+                            continue charReader;
+                        }
+
+                        if (!message.isEmpty()) {
+                            texts.add(new LiteralText(message));
+                        }
+
+                        MutableText textToModify;
+                        if (texts.size() == 1) {
+                            textToModify = texts.get(0).shallowCopy();
+                        } else {
+                            textToModify = new LiteralText("");
+                            textToModify.getSiblings().addAll(texts);
+                        }
+
+                        switch (statementText) {
+                            case ITALIC_TOKEN -> textToModify.setStyle(textToModify.getStyle().withItalic(true));
+                            case BOLD_TOKEN -> textToModify.setStyle(textToModify.getStyle().withBold(true));
+                            case UNDERLINE_TOKEN -> textToModify.setStyle(textToModify.getStyle().withUnderline(true));
+                            case STRIKETHROUGH_TOKEN -> textToModify.setStyle(textToModify.getStyle().withStrikethrough(true));
+                            case SPOILER_TOKEN -> {
+                                // TODO - █████ ████
+                                MutableText spoilerText = new LiteralText("[Spoiler]");
+                                spoilerText.setStyle(
+                                    spoilerText.getStyle()
+                                        .withColor(0xE5E5E8)
+                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, textToModify))
+                                );
+                                textToModify = spoilerText;
+                            }
+                            default -> {}
+                        }
+
+                        text = textToModify;
+                        message = "";
+                        if (character == ')') break charReader;
                     }
                 }
                 case PARSE_ESCAPED_CHARACTER -> {
