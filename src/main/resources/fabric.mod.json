@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "marcatexto",
+  "version": "${version}",
+  "name": "Marcatexto",
+  "description": "Adds Markdown support to your chat! Powered by a custom Discord-compatible Markdown engine",
+  "authors": ["EnnuiL"],
+  "contact": {
+    "homepage": "https://modrinth.com/mod/marcatexto",
+    "issues": "https://github.com/EnnuiL/Marcatexto/issues",
+    "sources": "https://github.com/EnnuiL/Marcatexto"
+  },
+  "license": "MIT",
+  "icon": "assets/marcatexto/icon.png",
+  "environment": "*",
+  "mixins": [
+    "marcatexto.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.11.0",
+    "fabric": ">=0.37.0"
+  }
+}
