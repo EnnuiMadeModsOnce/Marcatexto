@@ -16,7 +16,6 @@ public class MarkdownUtils {
     // These regex patterns were adapted from the simple-markdown library, which is used by Discord
     // This guarantees that the markdown will be 100% Discord-compatible
     // Source: https://github.com/Khan/simple-markdown/blob/master/src/index.js
-    private static final Pattern DONT_ESCAPE_PATTERN = Pattern.compile("\\\\([0-9A-Za-z\\s])");
     private static final Pattern ESCAPE_PATTERN = Pattern.compile("\\\\([^0-9A-Za-z\\s])");
     private static final Pattern UNDERLINE_ITALIC_PATTERN = Pattern.compile("\\b_((?:__|\\\\.|[^\\\\_])+?)_\\b", Pattern.DOTALL);
     private static final Pattern ASTERISK_ITALIC_PATTERN = Pattern.compile("\\*(?=\\S)((?:\\*\\*|\\\\.|\\s+(?:\\\\.|[^\\s\\*\\\\]|\\*\\*)|[^\\s\\*\\\\])+?)\\*(?!\\*)", Pattern.DOTALL);
