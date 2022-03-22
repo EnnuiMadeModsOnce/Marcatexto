@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
@@ -15,6 +16,7 @@ public class MarkdownUtils {
     // These regex patterns were adapted from the simple-markdown library, which is used by Discord
     // This guarantees that the markdown will be 100% Discord-compatible
     // Source: https://github.com/Khan/simple-markdown/blob/master/src/index.js
+    private static final Pattern DONT_ESCAPE_PATTERN = Pattern.compile("\\\\([0-9A-Za-z\\s])");
     private static final Pattern ESCAPE_PATTERN = Pattern.compile("\\\\([^0-9A-Za-z\\s])");
     private static final Pattern UNDERLINE_ITALIC_PATTERN = Pattern.compile("\\b_((?:__|\\\\.|[^\\\\_])+?)_\\b", Pattern.DOTALL);
     private static final Pattern ASTERISK_ITALIC_PATTERN = Pattern.compile("\\*(?=\\S)((?:\\*\\*|\\\\.|\\s+(?:\\\\.|[^\\s\\*\\\\]|\\*\\*)|[^\\s\\*\\\\])+?)\\*(?!\\*)", Pattern.DOTALL);
@@ -31,25 +33,27 @@ public class MarkdownUtils {
     private static final String SPOILER_TOKEN = "|";
 
     public static Text parseMarkdownMessage(String message) {
-        //System.out.println(message);
+        // FIXME - This escaping system sucks... Fix it
+        System.out.println(message);
         //String sanitizedMessage = message.replaceAll("([()])", "\\\\$1");
-        String sanitizedMessage = message.replaceAll("(?<!\\\\)([{}])", "\\\\$1");;
+        String sanitizedMessage = message.replaceAll("(?<!\\\\)([{}])", "\\\\$1");
 
         //System.out.println(sanitizedMessage);
-        List<String> escapedChars = new ArrayList<>();
+        List<String> escapedChars = new ObjectArrayList<>();
         int escapedCharCount = 0;
         while (ESCAPE_PATTERN.matcher(sanitizedMessage).find()) {
             Matcher escapeMatcher = ESCAPE_PATTERN.matcher(sanitizedMessage);
             if (escapeMatcher.find()) {
                 escapedChars.add(escapeMatcher.group(1));
                 escapedCharCount++;
-                sanitizedMessage = escapeMatcher.replaceFirst("{" + escapedCharCount + "}");
+                sanitizedMessage = escapeMatcher.replaceFirst(String.format("{%s}", escapedCharCount));
                 //System.out.println(sanitizedMessage);
             }
         }
         sanitizedMessage = sanitizedMessage.replaceAll("([()])", "\\\\$1");
         sanitizedMessage = sanitizedMessage.replaceAll("\\\\([{}])", "$1");
         sanitizedMessage = sanitizedMessage.replaceAll("\\\\([0-9A-Za-z\\s])", "\\\\$1");
+        sanitizedMessage = sanitizedMessage.replaceAll("(?<!\\\\)(\\\\)$", "\\\\$1");
         String tokenizedMessage = String.format("(%s:%s)", PLAIN_TOKEN, sanitizedMessage);
 
         tokenizedMessage = processPattern(tokenizedMessage, UNDERLINE_ITALIC_PATTERN, String.format("(%s:$1)", ITALIC_TOKEN));
@@ -74,9 +78,8 @@ public class MarkdownUtils {
             tokenizedMessage = pattern.matcher(tokenizedMessage).replaceAll(token);
         }
         */
-        tokenizedMessage = pattern.matcher(tokenizedMessage).replaceAll(token);
 
-        return tokenizedMessage;
+        return pattern.matcher(tokenizedMessage).replaceAll(token);
     }
 
     private enum ParseStage {
@@ -92,7 +95,7 @@ public class MarkdownUtils {
         String statementText = "";
         String message = "";
         boolean escapeNextChar = false;
-        List<Text> texts = new ArrayList<>();
+        List<Text> texts = new ObjectArrayList<>();
         String escapedCharacter = "";
 
         char[] tokenizedCharacters = tokenizedMessage.toCharArray();
@@ -101,7 +104,7 @@ public class MarkdownUtils {
         for (int i = 0; i < tokenizedCharacters.length; i++) {
             char character = tokenizedCharacters[i];
             readCharacters++;
-            //System.out.println(String.format("%s | %s | %s | %s | %s", character, stage, tokenizedMessage, escapeNextChar, i));
+            System.out.println(String.format("%s | %s | %s | %s | %s", character, stage, tokenizedMessage, escapeNextChar, i));
             
             switch (stage) {
                 case INIT -> {
@@ -117,16 +120,16 @@ public class MarkdownUtils {
                     }
                 }
                 case PARSE_TEXT -> {
-                    if (character != '('
+                    if (escapeNextChar) {
+                        message += character;
+                        escapeNextChar = false;
+                    } else if (character != '('
                     && character != ')'
                     && character != '\\'
                     && character != '{'
                     && character != '}'
                     ) {
                         message += character;
-                    } else if (escapeNextChar) {
-                        message += character;
-                        escapeNextChar = false;
                     } else if (character == '\\') {
                         escapeNextChar = true;
                     } else {
