@@ -33,7 +33,6 @@ public class MarkdownUtils {
 
     public static Text parseMarkdownMessage(String message) {
         // FIXME - This escaping system sucks... Fix it
-        System.out.println(message);
         //String sanitizedMessage = message.replaceAll("([()])", "\\\\$1");
         String sanitizedMessage = message.replaceAll("(?<!\\\\)([{}])", "\\\\$1");
 
@@ -103,7 +102,7 @@ public class MarkdownUtils {
         for (int i = 0; i < tokenizedCharacters.length; i++) {
             char character = tokenizedCharacters[i];
             readCharacters++;
-            System.out.println(String.format("%s | %s | %s | %s | %s", character, stage, tokenizedMessage, escapeNextChar, i));
+            //System.out.println(String.format("%s | %s | %s | %s | %s", character, stage, tokenizedMessage, escapeNextChar, i));
             
             switch (stage) {
                 case INIT -> {
